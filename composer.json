@@ -1,0 +1,19 @@
+{
+    "name": "edv/cache",
+    "description": "redis cache strategy",
+    "require": {
+        "ext-redis": "^5.3",
+        "ext-json": "*"
+    },
+    "authors": [
+        {
+            "name": "edwin",
+            "email": "edwin.fan@foxmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Edv\\Cache\\": "src/"
+        }
+    }
+}
