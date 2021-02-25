@@ -6,33 +6,31 @@ use Edv\Cache\Strategy\CacheList;
 
 class PatchList extends CacheList
 {
-    protected $KEY = 'aaaa';
+//    protected $cacheKey = 'aaaa';
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->expireAt = strtotime(date('Y-m-d 23:59:59'));
-    }
-
-    public function exec(callable $callback)
-    {
-        $callback($this->client,$this->KEY,$this);
-    }
-
-
-    public function patch()
+    public function patch(\Redis $client, $cacheKey)
     {
 
-        if ($this->client->exists($this->KEY))
-            return true;
-
-
+        $client->zAdd($cacheKey,1,2);
+        $client->zAdd($cacheKey,3,2);
+        $client->zAdd($cacheKey,5,2);
+        // TODO: Implement patch() method.
     }
-
 }
 
-$res = PatchList::strategy()->patchSelf(function (){
-    return [1,2,3];
-});
+try {
 
-var_dump($res);
+//    $res = PatchList::strategy()->get();
+//    var_dump($res);
+
+    $res = PatchList::strategy()
+//        ->clean()
+        ->patchSelf(
+        function () {
+            return [1, 2, 3,5];
+        }
+    );
+    var_dump($res);
+} catch (Exception $e) {
+}
+

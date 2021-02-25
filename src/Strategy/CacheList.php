@@ -11,43 +11,41 @@ use Edv\Cache\RedisUtil;
 abstract class CacheList extends AbstractContext
 {
 
+    protected $cacheKey;
     protected $expireAt;
     protected $expire;
-    protected $client;
-    protected $KEY;
-
-    /**
-     * CacheList constructor.
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        if (empty($this->KEY))
-            throw new \Exception('property KEY must overwrite');
-
-        $this->client   = RedisUtil::client();
-        $this->expireAt = strtotime(date('Y-m-d 23:59:59'));
-    }
 
     public function get($key = '')
     {
-        return $this->client->zRangeByScore($this->KEY,'-inf','+inf');
+        return RedisUtil::client()->zRangeByScore($this->cacheKey(),'-inf','+inf');
     }
 
     public function exec(callable $callback)
     {
-        $callback($this->client,$this->KEY);
+        $callback(RedisUtil::client(),$this->cacheKey());
     }
 
     public function clean($key = '') : IStrategy
     {
-        $this->client->del($this->KEY);
+        RedisUtil::client()->del($this->cacheKey());
+        return $this;
+    }
+
+    public function expire($time): IStrategy
+    {
+        $this->expire =$time;
+        return $this;
+    }
+
+    public function expireAt($datetime): IStrategy
+    {
+        $this->expireAt = strtotime($datetime);
         return $this;
     }
 
     public function patchSelf(callable $callback , string $key = '')
     {
-        if ($this->client->exists($this->KEY))
+        if (RedisUtil::client()->exists($this->cacheKey()))
             return $this->get();
 
         try {
@@ -56,22 +54,22 @@ abstract class CacheList extends AbstractContext
             throw $exception;
         }
 
-        $this->client->pipeline();
+        RedisUtil::client()->pipeline();
 
         foreach ($result as $key => $item){
 
             $val = is_array($item) ? json_encode($item) : strval($item);
-            $this->client->zAdd($this->KEY,$key,$val);
+            RedisUtil::client()->zAdd($this->cacheKey(),$key,$val);
         }
 
-        $this->client->exec();
+        RedisUtil::client()->exec();
 
         if ($this->expireAt){
-            $this->client->expireAt($this->KEY,$this->expireAt);
+            RedisUtil::client()->expireAt($this->cacheKey(),$this->expireAt);
         }
 
         if ($this->expire){
-            $this->client->expire($this->KEY,$this->expire);
+            RedisUtil::client()->expire($this->cacheKey(),$this->expire);
         }
 
         return $result;

@@ -7,7 +7,6 @@ namespace Edv\Cache;
 /**
  * Class AbstractContext
  * @package Edv\Cache
- * @method patch
  */
 abstract class AbstractContext implements IStrategy
 {
@@ -28,10 +27,19 @@ abstract class AbstractContext implements IStrategy
             RedisUtil::setDatabase($config['database']);
 
         $classHandle = (new static());
-        $classHandle->patch();
+        $classHandle->patch(RedisUtil::client(),$classHandle->cacheKey());
 
         return $classHandle;
     }
 
+    public function cacheKey(){
+
+        if ($this->cacheKey){
+            return $this->cacheKey;
+        }
+
+        return md5('edv:' . get_class($this));
+
+    }
 
 }

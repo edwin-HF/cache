@@ -11,26 +11,13 @@ use Edv\Cache\RedisUtil;
 abstract class CacheMap extends AbstractContext
 {
 
+    protected $cacheKey;
     protected $expireAt;
     protected $expire;
-    protected $client;
-    protected $KEY;
-
-    /**
-     * CacheMap constructor.
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        if (empty($this->KEY))
-            throw new \Exception('property KEY must overwrite');
-
-        $this->client = RedisUtil::client();
-    }
 
     public function exec(callable $callback)
     {
-        $callback($this->client,$this->KEY);
+        $callback(RedisUtil::client(),$this->cacheKey());
     }
 
     /**
@@ -40,26 +27,38 @@ abstract class CacheMap extends AbstractContext
     public function get($key = '')
     {
         if (empty($key))
-            return $this->client->hGetAll($this->KEY);
+            return RedisUtil::client()->hGetAll($this->cacheKey());
 
         if (is_array($key)){
-            return $this->client->hMGet($this->KEY, $key);
+            return RedisUtil::client()->hMGet($this->cacheKey(), $key);
         }else{
-            return $this->client->hGet($this->KEY,$key);
+            return RedisUtil::client()->hGet($this->cacheKey(),$key);
         }
 
+    }
+
+    public function expire($time): IStrategy
+    {
+        $this->expire = $time;
+        return $this;
+    }
+
+    public function expireAt($datetime): IStrategy
+    {
+        $this->expireAt = strtotime($datetime);
+        return $this;
     }
 
     public function clean($key = ''): IStrategy
     {
         if (!empty($key)){
             if (is_array($key)){
-                $this->client->hDel($this->KEY,...$key);
+                RedisUtil::client()->hDel($this->cacheKey(),...$key);
             }else{
-                $this->client->hDel($this->KEY,$key);
+                RedisUtil::client()->hDel($this->cacheKey(),$key);
             }
         }else{
-            $this->client->del($this->KEY);
+            RedisUtil::client()->del($this->cacheKey());
         }
 
         return $this;
@@ -74,7 +73,7 @@ abstract class CacheMap extends AbstractContext
     public function patchSelf(callable $callback , string $key = '')
     {
 
-        if (!empty($key) && $this->client->hExists($this->KEY,$key))
+        if (!empty($key) && RedisUtil::client()->hExists($this->cacheKey(),$key))
             return json_decode($this->get($key),true);
 
         try {
@@ -85,14 +84,14 @@ abstract class CacheMap extends AbstractContext
 
         try {
 
-            $this->client->hSet($this->KEY,$key,json_encode($result));
+            RedisUtil::client()->hSet($this->cacheKey(),$key,json_encode($result));
 
             if ($this->expireAt){
-                $this->client->expireAt($this->KEY,$this->expireAt);
+                RedisUtil::client()->expireAt($this->cacheKey(),$this->expireAt);
             }
 
             if ($this->expire){
-                $this->client->expire($this->KEY,$this->expire);
+                RedisUtil::client()->expire($this->cacheKey(),$this->expire);
             }
 
         }catch (\Exception $exception){}

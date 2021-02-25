@@ -13,25 +13,11 @@ abstract class CacheString extends AbstractContext
 
     protected $expireAt;
     protected $expire;
-    protected $client;
-    protected $PREFIX = '';
-
-    /**
-     * CacheString constructor.
-     */
-    public function __construct()
-    {
-
-        if (empty($this->PREFIX))
-            throw new \Exception('property PREFIX must overwrite');
-
-        $this->client  = RedisUtil::client();
-
-    }
+    protected $PREFIX = 'edv:cache:string:';
 
     public function exec(callable $callback)
     {
-        $callback($this->client);
+        $callback(RedisUtil::client());
     }
 
     /**
@@ -43,8 +29,20 @@ abstract class CacheString extends AbstractContext
         if (empty($key))
             return  '';
 
-        return unserialize($this->client->get($this->PREFIX . $key));
+        return unserialize(RedisUtil::client()->get($this->PREFIX . $key));
 
+    }
+
+    public function expire($time): IStrategy
+    {
+        $this->expire =$time;
+        return $this;
+    }
+
+    public function expireAt($datetime): IStrategy
+    {
+        $this->expireAt = strtotime($datetime);
+        return $this;
     }
 
     public function clean($key = ''): IStrategy
@@ -59,15 +57,15 @@ abstract class CacheString extends AbstractContext
 
             do{
 
-                $keys = $this->client->scan($iterator,$this->PREFIX . '*');
+                $keys = RedisUtil::client()->scan($iterator,$this->PREFIX . '*');
 
                 foreach ($keys as $key){
-                    $this->client->del($key);
+                    RedisUtil::client()->del($key);
                 }
 
             }while($iterator > 0);
         }else{
-            $this->client->del($this->PREFIX . $key);
+            RedisUtil::client()->del($this->PREFIX . $key);
         }
 
 
@@ -83,7 +81,7 @@ abstract class CacheString extends AbstractContext
     public function patchSelf(callable $callback , string $key = '')
     {
 
-        if ($this->client->exists($this->PREFIX . $key))
+        if (RedisUtil::client()->exists($this->PREFIX . $key))
             return $this->get($key);
 
         try {
@@ -94,14 +92,14 @@ abstract class CacheString extends AbstractContext
 
         $val = is_array($result) ? json_encode($result) : $result;
 
-        $this->client->set($this->PREFIX . $key,serialize($val));
+        RedisUtil::client()->set($this->PREFIX . $key,serialize($val));
 
         if ($this->expireAt){
-            $this->client->expireAt($this->PREFIX . $key,$this->expireAt);
+            RedisUtil::client()->expireAt($this->PREFIX . $key,$this->expireAt);
         }
 
         if ($this->expire){
-            $this->client->expire($this->PREFIX . $key,$this->expire);
+            RedisUtil::client()->expire($this->PREFIX . $key,$this->expire);
         }
 
         return $result;

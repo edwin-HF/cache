@@ -37,12 +37,29 @@ interface IStrategy
      * @param callable $callback
      * @param string $key list set 不传
      * @return mixed
+     * @throws \Exception
      */
     public function patchSelf(callable $callback,string $key = '');
 
     /**
+     * @param \Redis $client
+     * @param $cacheKey
      * @return mixed
      */
-    public function patch();
+    public function patch(\Redis $client,$cacheKey);
+
+    /**
+     * @param $time
+     * @return $this
+     */
+    public function expire($time) : self ;
+
+    /**
+     * @param $datetime
+     * @return $this
+     */
+    public function expireAt($datetime) : self ;
+
+
 
 }
