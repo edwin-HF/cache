@@ -1,7 +1,7 @@
 {
     "name": "edv/cache",
     "description": "redis cache strategy",
-    "version": "1.2",
+    "version": "1.4",
     "require": {
         "ext-redis": "^5.3",
         "ext-json": "*"
