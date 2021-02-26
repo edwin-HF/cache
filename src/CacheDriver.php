@@ -23,11 +23,15 @@ class CacheDriver
         if (self::$client)
             return self::$client;
 
-        self::$client = new Redis();
+        try {
 
-        self::$client->connect(self::$host,self::$port);
-        self::$client->auth(self::$password);
-        self::$client->select(self::$database);
+            self::$client = new Redis();
+
+            self::$client->connect(self::$host,self::$port);
+            self::$client->auth(self::$password);
+            self::$client->select(self::$database);
+
+        }catch (\Exception $exception){}
 
         return self::$client;
 
@@ -35,7 +39,8 @@ class CacheDriver
 
     public function __destruct()
     {
-        self::$client->close();
+        if (!is_null(self::$client))
+            self::$client->close();
     }
 
     /**

@@ -17,7 +17,12 @@ abstract class CacheList extends AbstractContext
 
     public function get($key = '')
     {
-        return CacheDriver::client()->zRangeByScore($this->cacheKey(),'-inf','+inf');
+        try {
+            $result = CacheDriver::client()->zRangeByScore($this->cacheKey(),'-inf','+inf');
+        }catch (\Exception $exception){
+            $result = [];
+        }
+        return $result;
     }
 
     public function exec(callable $callback)
@@ -27,7 +32,10 @@ abstract class CacheList extends AbstractContext
 
     public function clean($key = '') : IStrategy
     {
-        CacheDriver::client()->del($this->cacheKey());
+        try {
+            CacheDriver::client()->del($this->cacheKey());
+        }catch (\Exception $exception){}
+
         return $this;
     }
 
@@ -45,8 +53,12 @@ abstract class CacheList extends AbstractContext
 
     public function patchSelf(callable $callback , string $key = '')
     {
-        if (CacheDriver::client()->exists($this->cacheKey()))
-            return $this->get();
+        try {
+
+            if (CacheDriver::client()->exists($this->cacheKey()))
+                return $this->get();
+
+        }catch (\Exception $exception){}
 
         try {
             $result = $callback();
@@ -54,23 +66,27 @@ abstract class CacheList extends AbstractContext
             throw $exception;
         }
 
-        CacheDriver::client()->pipeline();
+        try {
 
-        foreach ($result as $key => $item){
+            CacheDriver::client()->pipeline();
 
-            $val = is_array($item) ? json_encode($item) : strval($item);
-            CacheDriver::client()->zAdd($this->cacheKey(),$key,$val);
-        }
+            foreach ($result as $key => $item){
 
-        CacheDriver::client()->exec();
+                $val = is_array($item) ? json_encode($item) : strval($item);
+                CacheDriver::client()->zAdd($this->cacheKey(),$key,$val);
+            }
 
-        if ($this->expireAt){
-            CacheDriver::client()->expireAt($this->cacheKey(),$this->expireAt);
-        }
+            CacheDriver::client()->exec();
 
-        if ($this->expire){
-            CacheDriver::client()->expire($this->cacheKey(),$this->expire);
-        }
+            if ($this->expireAt){
+                CacheDriver::client()->expireAt($this->cacheKey(),$this->expireAt);
+            }
+
+            if ($this->expire){
+                CacheDriver::client()->expire($this->cacheKey(),$this->expire);
+            }
+
+        }catch (\Exception $exception){}
 
         return $result;
     }

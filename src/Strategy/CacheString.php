@@ -28,7 +28,11 @@ abstract class CacheString extends AbstractContext
         if (empty($key))
             return  '';
 
-        return unserialize(CacheDriver::client()->get($this->cacheKey() . $key));
+        try {
+            return unserialize(CacheDriver::client()->get($this->cacheKey() . $key));
+        }catch (\Exception $exception){
+            return [];
+        }
 
     }
 
@@ -46,27 +50,29 @@ abstract class CacheString extends AbstractContext
 
     public function clean($key = ''): IStrategy
     {
+        try {
 
-        if (empty($key)){
+            if (empty($key)){
 
-            if (empty($this->cacheKey()))
-                return $this;
+                if (empty($this->cacheKey()))
+                    return $this;
 
-            $iterator = null;
+                $iterator = null;
 
-            do{
+                do{
 
-                $keys = CacheDriver::client()->scan($iterator,$this->cacheKey() . '*');
+                    $keys = CacheDriver::client()->scan($iterator,$this->cacheKey() . '*');
 
-                foreach ($keys as $key){
-                    CacheDriver::client()->del($key);
-                }
+                    foreach ($keys as $key){
+                        CacheDriver::client()->del($key);
+                    }
 
-            }while($iterator > 0);
-        }else{
-            CacheDriver::client()->del($this->cacheKey() . $key);
-        }
+                }while($iterator > 0);
+            }else{
+                CacheDriver::client()->del($this->cacheKey() . $key);
+            }
 
+        }catch (\Exception $exception){}
 
         return $this;
     }
@@ -80,8 +86,12 @@ abstract class CacheString extends AbstractContext
     public function patchSelf(callable $callback , string $key = '')
     {
 
-        if (CacheDriver::client()->exists($this->cacheKey() . $key))
-            return $this->get($key);
+        try {
+
+            if (CacheDriver::client()->exists($this->cacheKey() . $key))
+                return $this->get($key);
+
+        }catch (\Exception $exception){}
 
         try {
             $result = $callback();
@@ -89,17 +99,21 @@ abstract class CacheString extends AbstractContext
             throw $exception;
         }
 
-        $val = is_array($result) ? json_encode($result) : $result;
+        try {
 
-        CacheDriver::client()->set($this->cacheKey() . $key,serialize($val));
+            $val = is_array($result) ? json_encode($result) : $result;
 
-        if ($this->expireAt){
-            CacheDriver::client()->expireAt($this->cacheKey() . $key,$this->expireAt);
-        }
+            CacheDriver::client()->set($this->cacheKey() . $key,serialize($val));
 
-        if ($this->expire){
-            CacheDriver::client()->expire($this->cacheKey() . $key,$this->expire);
-        }
+            if ($this->expireAt){
+                CacheDriver::client()->expireAt($this->cacheKey() . $key,$this->expireAt);
+            }
+
+            if ($this->expire){
+                CacheDriver::client()->expire($this->cacheKey() . $key,$this->expire);
+            }
+
+        }catch (\Exception $exception){}
 
         return $result;
 

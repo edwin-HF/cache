@@ -26,13 +26,19 @@ abstract class CacheMap extends AbstractContext
      */
     public function get($key = '')
     {
-        if (empty($key))
-            return CacheDriver::client()->hGetAll($this->cacheKey());
+        try {
 
-        if (is_array($key)){
-            return CacheDriver::client()->hMGet($this->cacheKey(), $key);
-        }else{
-            return CacheDriver::client()->hGet($this->cacheKey(),$key);
+            if (empty($key))
+                return CacheDriver::client()->hGetAll($this->cacheKey());
+
+            if (is_array($key)){
+                return CacheDriver::client()->hMGet($this->cacheKey(), $key);
+            }else{
+                return CacheDriver::client()->hGet($this->cacheKey(),$key);
+            }
+
+        }catch (\Exception $exception){
+            return [];
         }
 
     }
@@ -51,15 +57,19 @@ abstract class CacheMap extends AbstractContext
 
     public function clean($key = ''): IStrategy
     {
-        if (!empty($key)){
-            if (is_array($key)){
-                CacheDriver::client()->hDel($this->cacheKey(),...$key);
+        try {
+
+            if (!empty($key)){
+                if (is_array($key)){
+                    CacheDriver::client()->hDel($this->cacheKey(),...$key);
+                }else{
+                    CacheDriver::client()->hDel($this->cacheKey(),$key);
+                }
             }else{
-                CacheDriver::client()->hDel($this->cacheKey(),$key);
+                CacheDriver::client()->del($this->cacheKey());
             }
-        }else{
-            CacheDriver::client()->del($this->cacheKey());
-        }
+
+        }catch (\Exception $exception){}
 
         return $this;
     }
@@ -72,9 +82,12 @@ abstract class CacheMap extends AbstractContext
      */
     public function patchSelf(callable $callback , string $key = '')
     {
+        try {
 
-        if (!empty($key) && CacheDriver::client()->hExists($this->cacheKey(),$key))
-            return json_decode($this->get($key),true);
+            if (!empty($key) && CacheDriver::client()->hExists($this->cacheKey(),$key))
+                return json_decode($this->get($key),true);
+
+        }catch (\Exception $exception){}
 
         try {
             $result = $callback();
