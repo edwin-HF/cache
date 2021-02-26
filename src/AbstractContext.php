@@ -15,19 +15,19 @@ abstract class AbstractContext implements IStrategy
     {
 
         if (isset($config['host']) && !empty($config['host']))
-            RedisUtil::setHost($config['host']);
+            CacheDriver::setHost($config['host']);
 
         if (isset($config['port']) && !empty($config['port']))
-            RedisUtil::setPort($config['port']);
+            CacheDriver::setPort($config['port']);
 
         if (isset($config['password']) && !empty($config['password']))
-            RedisUtil::setPassword($config['password']);
+            CacheDriver::setPassword($config['password']);
 
         if (isset($config['database']) && !empty($config['database']))
-            RedisUtil::setDatabase($config['database']);
+            CacheDriver::setDatabase($config['database']);
 
         $classHandle = (new static());
-        $classHandle->patch(RedisUtil::client(),$classHandle->cacheKey());
+        $classHandle->patch(CacheDriver::client(),$classHandle->cacheKey());
 
         return $classHandle;
     }

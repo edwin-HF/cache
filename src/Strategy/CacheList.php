@@ -6,7 +6,7 @@ namespace Edv\Cache\Strategy;
 
 use Edv\Cache\AbstractContext;
 use Edv\Cache\IStrategy;
-use Edv\Cache\RedisUtil;
+use Edv\Cache\CacheDriver;
 
 abstract class CacheList extends AbstractContext
 {
@@ -17,17 +17,17 @@ abstract class CacheList extends AbstractContext
 
     public function get($key = '')
     {
-        return RedisUtil::client()->zRangeByScore($this->cacheKey(),'-inf','+inf');
+        return CacheDriver::client()->zRangeByScore($this->cacheKey(),'-inf','+inf');
     }
 
     public function exec(callable $callback)
     {
-        $callback(RedisUtil::client(),$this->cacheKey());
+        $callback(CacheDriver::client(),$this->cacheKey());
     }
 
     public function clean($key = '') : IStrategy
     {
-        RedisUtil::client()->del($this->cacheKey());
+        CacheDriver::client()->del($this->cacheKey());
         return $this;
     }
 
@@ -45,7 +45,7 @@ abstract class CacheList extends AbstractContext
 
     public function patchSelf(callable $callback , string $key = '')
     {
-        if (RedisUtil::client()->exists($this->cacheKey()))
+        if (CacheDriver::client()->exists($this->cacheKey()))
             return $this->get();
 
         try {
@@ -54,22 +54,22 @@ abstract class CacheList extends AbstractContext
             throw $exception;
         }
 
-        RedisUtil::client()->pipeline();
+        CacheDriver::client()->pipeline();
 
         foreach ($result as $key => $item){
 
             $val = is_array($item) ? json_encode($item) : strval($item);
-            RedisUtil::client()->zAdd($this->cacheKey(),$key,$val);
+            CacheDriver::client()->zAdd($this->cacheKey(),$key,$val);
         }
 
-        RedisUtil::client()->exec();
+        CacheDriver::client()->exec();
 
         if ($this->expireAt){
-            RedisUtil::client()->expireAt($this->cacheKey(),$this->expireAt);
+            CacheDriver::client()->expireAt($this->cacheKey(),$this->expireAt);
         }
 
         if ($this->expire){
-            RedisUtil::client()->expire($this->cacheKey(),$this->expire);
+            CacheDriver::client()->expire($this->cacheKey(),$this->expire);
         }
 
         return $result;

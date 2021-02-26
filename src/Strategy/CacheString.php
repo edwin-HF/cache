@@ -6,7 +6,7 @@ namespace Edv\Cache\Strategy;
 
 use Edv\Cache\AbstractContext;
 use Edv\Cache\IStrategy;
-use Edv\Cache\RedisUtil;
+use Edv\Cache\CacheDriver;
 
 abstract class CacheString extends AbstractContext
 {
@@ -16,7 +16,7 @@ abstract class CacheString extends AbstractContext
 
     public function exec(callable $callback)
     {
-        $callback(RedisUtil::client());
+        $callback(CacheDriver::client());
     }
 
     /**
@@ -28,7 +28,7 @@ abstract class CacheString extends AbstractContext
         if (empty($key))
             return  '';
 
-        return unserialize(RedisUtil::client()->get($this->cacheKey() . $key));
+        return unserialize(CacheDriver::client()->get($this->cacheKey() . $key));
 
     }
 
@@ -56,15 +56,15 @@ abstract class CacheString extends AbstractContext
 
             do{
 
-                $keys = RedisUtil::client()->scan($iterator,$this->cacheKey() . '*');
+                $keys = CacheDriver::client()->scan($iterator,$this->cacheKey() . '*');
 
                 foreach ($keys as $key){
-                    RedisUtil::client()->del($key);
+                    CacheDriver::client()->del($key);
                 }
 
             }while($iterator > 0);
         }else{
-            RedisUtil::client()->del($this->cacheKey() . $key);
+            CacheDriver::client()->del($this->cacheKey() . $key);
         }
 
 
@@ -80,7 +80,7 @@ abstract class CacheString extends AbstractContext
     public function patchSelf(callable $callback , string $key = '')
     {
 
-        if (RedisUtil::client()->exists($this->cacheKey() . $key))
+        if (CacheDriver::client()->exists($this->cacheKey() . $key))
             return $this->get($key);
 
         try {
@@ -91,14 +91,14 @@ abstract class CacheString extends AbstractContext
 
         $val = is_array($result) ? json_encode($result) : $result;
 
-        RedisUtil::client()->set($this->cacheKey() . $key,serialize($val));
+        CacheDriver::client()->set($this->cacheKey() . $key,serialize($val));
 
         if ($this->expireAt){
-            RedisUtil::client()->expireAt($this->cacheKey() . $key,$this->expireAt);
+            CacheDriver::client()->expireAt($this->cacheKey() . $key,$this->expireAt);
         }
 
         if ($this->expire){
-            RedisUtil::client()->expire($this->cacheKey() . $key,$this->expire);
+            CacheDriver::client()->expire($this->cacheKey() . $key,$this->expire);
         }
 
         return $result;

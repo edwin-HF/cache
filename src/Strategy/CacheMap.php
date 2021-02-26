@@ -6,7 +6,7 @@ namespace Edv\Cache\Strategy;
 
 use Edv\Cache\AbstractContext;
 use Edv\Cache\IStrategy;
-use Edv\Cache\RedisUtil;
+use Edv\Cache\CacheDriver;
 
 abstract class CacheMap extends AbstractContext
 {
@@ -17,7 +17,7 @@ abstract class CacheMap extends AbstractContext
 
     public function exec(callable $callback)
     {
-        $callback(RedisUtil::client(),$this->cacheKey());
+        $callback(CacheDriver::client(),$this->cacheKey());
     }
 
     /**
@@ -27,12 +27,12 @@ abstract class CacheMap extends AbstractContext
     public function get($key = '')
     {
         if (empty($key))
-            return RedisUtil::client()->hGetAll($this->cacheKey());
+            return CacheDriver::client()->hGetAll($this->cacheKey());
 
         if (is_array($key)){
-            return RedisUtil::client()->hMGet($this->cacheKey(), $key);
+            return CacheDriver::client()->hMGet($this->cacheKey(), $key);
         }else{
-            return RedisUtil::client()->hGet($this->cacheKey(),$key);
+            return CacheDriver::client()->hGet($this->cacheKey(),$key);
         }
 
     }
@@ -53,12 +53,12 @@ abstract class CacheMap extends AbstractContext
     {
         if (!empty($key)){
             if (is_array($key)){
-                RedisUtil::client()->hDel($this->cacheKey(),...$key);
+                CacheDriver::client()->hDel($this->cacheKey(),...$key);
             }else{
-                RedisUtil::client()->hDel($this->cacheKey(),$key);
+                CacheDriver::client()->hDel($this->cacheKey(),$key);
             }
         }else{
-            RedisUtil::client()->del($this->cacheKey());
+            CacheDriver::client()->del($this->cacheKey());
         }
 
         return $this;
@@ -73,7 +73,7 @@ abstract class CacheMap extends AbstractContext
     public function patchSelf(callable $callback , string $key = '')
     {
 
-        if (!empty($key) && RedisUtil::client()->hExists($this->cacheKey(),$key))
+        if (!empty($key) && CacheDriver::client()->hExists($this->cacheKey(),$key))
             return json_decode($this->get($key),true);
 
         try {
@@ -84,14 +84,14 @@ abstract class CacheMap extends AbstractContext
 
         try {
 
-            RedisUtil::client()->hSet($this->cacheKey(),$key,json_encode($result));
+            CacheDriver::client()->hSet($this->cacheKey(),$key,json_encode($result));
 
             if ($this->expireAt){
-                RedisUtil::client()->expireAt($this->cacheKey(),$this->expireAt);
+                CacheDriver::client()->expireAt($this->cacheKey(),$this->expireAt);
             }
 
             if ($this->expire){
-                RedisUtil::client()->expire($this->cacheKey(),$this->expire);
+                CacheDriver::client()->expire($this->cacheKey(),$this->expire);
             }
 
         }catch (\Exception $exception){}

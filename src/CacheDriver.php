@@ -6,7 +6,7 @@ namespace Edv\Cache;
 
 use Redis;
 
-class RedisUtil
+class CacheDriver
 {
 
     private static $host = '127.0.0.1';
