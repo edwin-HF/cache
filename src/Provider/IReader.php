@@ -8,5 +8,6 @@ interface IReader
 {
 
     public function patch();
+    public function expire();
 
 }

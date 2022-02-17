@@ -8,7 +8,7 @@ use Edv\Cache\Driver\IDriver;
 use Edv\Cache\Provider\IReader;
 use Edv\Cache\Provider\IWriter;
 use Edv\Cache\Provider\Traits\AutoFlush;
-use mysql_xdevapi\Statement;
+use Edv\Cache\Provider\Traits\Forever;
 use Redis;
 
 /**
@@ -19,6 +19,7 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
 {
 
     use AutoFlush;
+    use Forever;
 
     protected function client(){
 
@@ -75,6 +76,15 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
         try {
 
             $this->fill($result);
+            $ttl = $this->expire();
+
+            if (!empty($ttl)){
+                if ($timestamp = strtotime($ttl)){
+                    $this->client()->expireAt($this->cacheKey(), $timestamp);
+                }else{
+                    $this->client()->expire($this->cacheKey(), $ttl);
+                }
+            }
 
         }catch (\Exception $exception){}
 

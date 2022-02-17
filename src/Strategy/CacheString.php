@@ -6,11 +6,13 @@ namespace Edv\Cache\Strategy;
 
 use Edv\Cache\AbstractContext;
 use Edv\Cache\Provider\Traits\EmptyPatch;
+use Edv\Cache\Strategy\Traits\EmptyFill;
 
 abstract class CacheString extends AbstractContext
 {
 
     use EmptyPatch;
+    use EmptyFill;
 
     public static function newInstance():self
     {
@@ -94,10 +96,5 @@ abstract class CacheString extends AbstractContext
 
     }
 
-
-    protected function fill($data)
-    {
-        // TODO: Implement fill() method.
-    }
 
 }

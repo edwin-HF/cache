@@ -9,6 +9,6 @@ trait AutoFlush
 
     public function flush()
     {
-        // TODO: Implement flush() method.
+        $this->client()->del($this->cacheKey());
     }
 }
