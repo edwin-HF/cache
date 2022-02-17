@@ -1,10 +1,9 @@
 {
     "name": "edv/cache",
-    "description": "redis cache strategy",
-    "version": "1.6",
+    "description": "redis cache (read/write through)",
+    "version": "2.0",
     "require": {
-        "ext-redis": "^5.3",
-        "ext-json": "*"
+        "ext-redis": "*",
     },
     "authors": [
         {

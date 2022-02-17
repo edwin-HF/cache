@@ -5,90 +5,79 @@ namespace Edv\Cache\Strategy;
 
 
 use Edv\Cache\AbstractContext;
-use Edv\Cache\IStrategy;
-use Edv\Cache\CacheDriver;
 
+
+/**
+ * Class CacheList
+ * @package Edv\Cache\Strategy
+ */
 abstract class CacheList extends AbstractContext
 {
 
-    protected $cacheKey;
-    protected $expireAt;
-    protected $expire;
+    private $begin = '-inf';
+    private $end   = '+inf';
 
-    public function get($key = '')
+    public static function newInstance(): self
     {
+        return parent::newInstance();
+    }
+
+    public function forPage($page, $limit){
+
+        $this->begin = ($page - 1) * $limit;
+        $this->end   = $this->begin + $limit - 1;
+
+        return $this;
+    }
+
+    public function get()
+    {
+
+        $returnData = [];
+
         try {
-            $result = CacheDriver::client()->zRangeByScore($this->cacheKey(),'-inf','+inf');
-        }catch (\Exception $exception){
-            $result = [];
+            $result = $this->client()->zRangeByScore($this->cacheKey(),$this->begin,$this->end);
+            foreach ($result as $item){
+                $returnData[] = unserialize($item);
+            }
+        }catch (\Exception $exception){}
+
+        return $returnData;
+    }
+
+    public function size(){
+        return $this->client()->zCard($this->cacheKey());
+    }
+
+    public function append($data){
+
+        try {
+            $this->fill($data);
+        }catch (\Exception $exception){}
+
+        return $this;
+
+    }
+
+
+    protected function fill($data){
+
+        if (!is_array($data) || empty($data))
+            return;
+
+        $last = $this->size();
+
+        $this->client()->pipeline();
+
+        $index = 0;
+        foreach ($data as $item){
+            if($this->client()->zAdd($this->cacheKey(), ['NX'], $index + $last, serialize($item))){
+                $index++;
+            }
         }
-        return $result;
-    }
 
-    public function exec(callable $callback)
-    {
-        $callback(CacheDriver::client(),$this->cacheKey());
-    }
+        $this->client()->exec();
 
-    public function clean($key = '') : IStrategy
-    {
-        try {
-            CacheDriver::client()->del($this->cacheKey());
-        }catch (\Exception $exception){}
-
-        return $this;
-    }
-
-    public function expire($time): IStrategy
-    {
-        $this->expire =$time;
-        return $this;
-    }
-
-    public function expireAt($datetime): IStrategy
-    {
-        $this->expireAt = strtotime($datetime);
-        return $this;
-    }
-
-    public function patchSelf(callable $callback , string $key = '')
-    {
-        try {
-
-            if (CacheDriver::client()->exists($this->cacheKey()))
-                return $this->get();
-
-        }catch (\Exception $exception){}
-
-        try {
-            $result = $callback();
-        }catch (\Exception $exception){
-            throw $exception;
-        }
-
-        try {
-
-            CacheDriver::client()->pipeline();
-
-            foreach ($result as $key => $item){
-
-                $val = is_array($item) ? json_encode($item) : strval($item);
-                CacheDriver::client()->zAdd($this->cacheKey(),$key,$val);
-            }
-
-            CacheDriver::client()->exec();
-
-            if ($this->expireAt){
-                CacheDriver::client()->expireAt($this->cacheKey(),$this->expireAt);
-            }
-
-            if ($this->expire){
-                CacheDriver::client()->expire($this->cacheKey(),$this->expire);
-            }
-
-        }catch (\Exception $exception){}
-
-        return $result;
     }
 
 }

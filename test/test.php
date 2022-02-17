@@ -4,33 +4,30 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Edv\Cache\Strategy\CacheList;
 
-class PatchList extends CacheList
+
+/**
+ * Class PatchList
+ */
+
+class PatchList extends \Edv\Cache\Strategy\CacheString
 {
-//    protected $cacheKey = 'aaaa';
 
-    public function patch(\Redis $client, $cacheKey)
-    {
+    use \Edv\Cache\Driver\Traits\AutoGenerateCacheKey;
+    use \Edv\Cache\Driver\Traits\LocalConfig;
 
-        $client->zAdd($cacheKey,1,2);
-        $client->zAdd($cacheKey,3,2);
-        $client->zAdd($cacheKey,5,2);
-        // TODO: Implement patch() method.
-    }
+
 }
 
 try {
 
-//    $res = PatchList::strategy()->get();
-//    var_dump($res);
+    $res = PatchList::newInstance()
+        ->put('aa',1)
+        ->put('bb',2)
+        ->inc('cc');
 
-    $res = PatchList::strategy()
-//        ->clean()
-        ->patchSelf(
-        function () {
-            return [1, 2, 3,5];
-        }
-    );
     var_dump($res);
+
 } catch (Exception $e) {
+    var_dump($e->getMessage());
 }
 

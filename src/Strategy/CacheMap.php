@@ -5,111 +5,83 @@ namespace Edv\Cache\Strategy;
 
 
 use Edv\Cache\AbstractContext;
-use Edv\Cache\IStrategy;
-use Edv\Cache\CacheDriver;
 
 abstract class CacheMap extends AbstractContext
 {
 
-    protected $cacheKey;
-    protected $expireAt;
-    protected $expire;
-
-    public function exec(callable $callback)
+    public static function newInstance(): self
     {
-        $callback(CacheDriver::client(),$this->cacheKey());
+        return parent::newInstance();
     }
 
     /**
-     * @param mixed $key
-     * @return array|mixed|string
+     * @param $key
+     * @return string
      */
-    public function get($key = '')
+    public function get($key)
     {
         try {
 
-            if (empty($key))
-                return CacheDriver::client()->hGetAll($this->cacheKey());
-
-            if (is_array($key)){
-                return CacheDriver::client()->hMGet($this->cacheKey(), $key);
-            }else{
-                return CacheDriver::client()->hGet($this->cacheKey(),$key);
-            }
+            $result = $this->client()->hGet($this->cacheKey(),$key);
+            return unserialize($result);
 
         }catch (\Exception $exception){
-            return [];
+            return '';
         }
 
     }
 
-    public function expire($time): IStrategy
-    {
-        $this->expire = $time;
-        return $this;
-    }
+    public function getMultiple($keys = []){
 
-    public function expireAt($datetime): IStrategy
-    {
-        $this->expireAt = strtotime($datetime);
-        return $this;
-    }
-
-    public function clean($key = ''): IStrategy
-    {
-        try {
-
-            if (!empty($key)){
-                if (is_array($key)){
-                    CacheDriver::client()->hDel($this->cacheKey(),...$key);
-                }else{
-                    CacheDriver::client()->hDel($this->cacheKey(),$key);
-                }
-            }else{
-                CacheDriver::client()->del($this->cacheKey());
-            }
-
-        }catch (\Exception $exception){}
-
-        return $this;
-    }
-
-    /**
-     * @param callable $callback
-     * @param string $key
-     * @return mixed|void
-     * @throws \Exception
-     */
-    public function patchSelf(callable $callback , string $key = '')
-    {
-        try {
-
-            if (!empty($key) && CacheDriver::client()->hExists($this->cacheKey(),$key))
-                return json_decode($this->get($key),true);
-
-        }catch (\Exception $exception){}
-
-        try {
-            $result = $callback();
-        }catch (\Exception $exception){
-            throw $exception;
+        if (empty($keys)){
+            $result = $this->client()->hGetAll($this->cacheKey());
+        }else{
+            $result = $this->client()->hMGet($this->cacheKey(), $keys);
         }
 
-        try {
-
-            CacheDriver::client()->hSet($this->cacheKey(),$key,json_encode($result));
-
-            if ($this->expireAt){
-                CacheDriver::client()->expireAt($this->cacheKey(),$this->expireAt);
-            }
-
-            if ($this->expire){
-                CacheDriver::client()->expire($this->cacheKey(),$this->expire);
-            }
-
-        }catch (\Exception $exception){}
+        foreach ($result as $key => $value){
+            $result[$key] = unserialize($value);
+        }
 
         return $result;
+
+    }
+
+    public function size(){
+        return $this->client()->hLen($this->cacheKey());
+    }
+
+    public function put($key, $value){
+        $this->fill([$key => $value]);
+        return $this;
+    }
+
+    public function putMultiple($data){
+        $this->fill($data);
+        return $this;
+    }
+
+    /**
+     * @param string|array $key
+     * @return $this
+     */
+    public function del($key){
+        $this->client()->hDel($this->cacheKey(),$key);
+        return $this;
+    }
+
+    protected function fill($data){
+
+        if (!is_array($data) || empty($data))
+            return;
+
+        $this->client()->pipeline();
+
+        foreach ($data as $key => $item){
+            $this->client()->hSet($this->cacheKey(),$key,serialize($item));
+        }
+
+        $this->client()->exec();
 
     }
 
