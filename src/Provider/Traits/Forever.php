@@ -7,7 +7,6 @@ trait Forever
 {
 
     public function expire(){
-        var_dump(1212);
         return null;
     }
 }

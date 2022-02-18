@@ -6,13 +6,9 @@ namespace Edv\Cache\Strategy;
 
 use Edv\Cache\AbstractContext;
 use Edv\Cache\Provider\Traits\EmptyPatch;
-use Edv\Cache\Strategy\Traits\EmptyFill;
 
 abstract class CacheBitmap extends AbstractContext
 {
-
-    use EmptyPatch;
-    use EmptyFill;
 
     public static function newInstance():self
     {
@@ -57,6 +53,8 @@ abstract class CacheBitmap extends AbstractContext
 
         return (new class($op1, $op2, $op, $this->config()) extends CacheBitmap{
 
+            use EmptyPatch;
+
             private $op1;
             private $op2;
             private $op;
@@ -89,6 +87,19 @@ abstract class CacheBitmap extends AbstractContext
         });
     }
 
+    public function fill($data)
+    {
+        if (!is_array($data) || empty($data))
+            return;
+
+        $this->client()->pipeline();
+
+        foreach ($data as $key => $item){
+            $this->client()->setBit($this->cacheKey(),$key,($item > 0 ? 1 : 0));
+        }
+
+        $this->client()->exec();
+    }
 
 
 }

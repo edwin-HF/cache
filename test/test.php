@@ -21,6 +21,7 @@ class PatchList extends \Edv\Cache\Strategy\CacheString
 class Bit1 extends \Edv\Cache\Strategy\CacheBitmap{
     use \Edv\Cache\Driver\Traits\AutoGenerateCacheKey;
     use \Edv\Cache\Driver\Traits\LocalConfig;
+    use \Edv\Cache\Provider\Traits\EmptyPatch;
 
     public function expire()
     {
@@ -34,6 +35,10 @@ class Bit2 extends \Edv\Cache\Strategy\CacheBitmap{
     use \Edv\Cache\Driver\Traits\AutoGenerateCacheKey;
     use \Edv\Cache\Driver\Traits\LocalConfig;
 
+    public function patch()
+    {
+        return [12=>1,23=>0];
+    }
 }
 
 try {
@@ -46,7 +51,8 @@ try {
 
     var_dump($newbt->status(3));*/
 
-    var_dump(Bit1::newInstance()->resume(2)->status(2));
+    Bit2::newInstance()->flush();
+    var_dump(Bit2::newInstance()->resume(2)->status(12));
 
 
 
