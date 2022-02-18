@@ -1,8 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-
-use Edv\Cache\Strategy\CacheList;
+require_once __DIR__ . '/provider/Provider.php';
+require_once __DIR__ . '/provider/person/PersonInfo.php';
+require_once __DIR__ . '/provider/person/PersonList.php';
 
 
 /**
@@ -44,23 +45,32 @@ class Bit2 extends \Edv\Cache\Strategy\CacheBitmap{
 try {
 
 
-/*    $bt1 = Bit1::newInstance()->resume(2)->resume(3);
+    // bitmap operate
+    $bt1 = Bit1::newInstance()->resume(2)->resume(3);
     $bt2 = Bit2::newInstance()->resume(2);
 
     $newbt = $bt1->opAND($bt2);
 
-    var_dump($newbt->status(3));*/
+    var_dump($newbt->status(3));
 
+
+    // bitmap get set multiple operate
     Bit2::newInstance()->flush();
     var_dump(Bit2::newInstance()->resume(2)->status(12));
 
-    var_dump(Bit2::newInstance()->revokeMultiple([2,12]));
+    Bit2::newInstance()->revokeMultiple([2,12]);
 
     var_dump(Bit2::newInstance()->status(2));
     var_dump(Bit2::newInstance()->status(12));
     var_dump(Bit2::newInstance()->status(23));
 
+    // List
+    $res = PersonList::newInstance()->forPage(2,1)->get();
+    var_dump($res);
 
+    // Map
+    $res = PersonInfo::newInstance()->get(2);
+    var_dump($res);
 
 
 } catch (Exception $e) {
