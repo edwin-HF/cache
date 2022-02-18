@@ -3,7 +3,7 @@
     "description": "redis cache (read/write through)",
     "version": "2.0",
     "require": {
-        "ext-redis": "*",
+        "ext-redis": "*"
     },
     "authors": [
         {
