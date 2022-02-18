@@ -1,7 +1,6 @@
 {
     "name": "edv/cache",
     "description": "redis cache (read/write through)",
-    "version": "2.0.0",
     "require": {
         "ext-redis": "*"
     },
