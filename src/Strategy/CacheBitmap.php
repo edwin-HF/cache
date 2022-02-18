@@ -20,8 +20,18 @@ abstract class CacheBitmap extends AbstractContext
         return $this;
     }
 
+    public function batchResume(array $offset){
+        $this->fill(array_fill_keys($offset,1));
+        return $this;
+    }
+
     public function revoke(int $offset){
         $this->client()->setBit($this->cacheKey(),$offset,0);
+        return $this;
+    }
+
+    public function batchRevoke(array $offset){
+        $this->fill(array_fill_keys($offset,0));
         return $this;
     }
 

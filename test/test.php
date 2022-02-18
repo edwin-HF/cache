@@ -37,7 +37,7 @@ class Bit2 extends \Edv\Cache\Strategy\CacheBitmap{
 
     public function patch()
     {
-        return [12=>1,23=>0];
+        return [12=>1,23=>1];
     }
 }
 
@@ -54,6 +54,11 @@ try {
     Bit2::newInstance()->flush();
     var_dump(Bit2::newInstance()->resume(2)->status(12));
 
+    var_dump(Bit2::newInstance()->batchRevoke([2,12]));
+
+    var_dump(Bit2::newInstance()->status(2));
+    var_dump(Bit2::newInstance()->status(12));
+    var_dump(Bit2::newInstance()->status(23));
 
 
 
