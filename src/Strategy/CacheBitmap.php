@@ -20,7 +20,7 @@ abstract class CacheBitmap extends AbstractContext
         return $this;
     }
 
-    public function batchResume(array $offset){
+    public function resumeMultiple(array $offset){
         $this->fill(array_fill_keys($offset,1));
         return $this;
     }
@@ -30,7 +30,7 @@ abstract class CacheBitmap extends AbstractContext
         return $this;
     }
 
-    public function batchRevoke(array $offset){
+    public function revokeMultiple(array $offset){
         $this->fill(array_fill_keys($offset,0));
         return $this;
     }

@@ -54,7 +54,7 @@ try {
     Bit2::newInstance()->flush();
     var_dump(Bit2::newInstance()->resume(2)->status(12));
 
-    var_dump(Bit2::newInstance()->batchRevoke([2,12]));
+    var_dump(Bit2::newInstance()->revokeMultiple([2,12]));
 
     var_dump(Bit2::newInstance()->status(2));
     var_dump(Bit2::newInstance()->status(12));
