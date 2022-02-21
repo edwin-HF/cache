@@ -1,4 +1,4 @@
-# redis cache strategy(read/write through)
+# redis cache strategy(read through)
 
 
 ### 简介
