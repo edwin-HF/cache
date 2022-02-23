@@ -91,13 +91,14 @@ try {
     var_dump($res);
 
     Str::newInstance()->store('aa',121);
-    Str::newInstance()->store('bb',function (){
+    $res = Str::newInstance()->store('bb',function (){
+
+        var_dump(12121212);
         return [1,2,3];
     });
 
-    var_dump(Str::newInstance()->get('bb'));
+    var_dump($res);
 
-    Str::newInstance()->flush();
 
 
 } catch (Exception $e) {

@@ -46,19 +46,40 @@ abstract class CacheString extends AbstractContext
     }
 
     public function forever(string $key, $value){
-        $this->client()->set($this->packKey($key),serialize((is_callable($value)) ? $value() : $value));
-        return $this;
+
+        if ($this->client()->exists($this->packKey($key)))
+            return $this->get($key);
+
+        $cacheData = is_callable($value) ? $value() : $value;
+
+        $this->client()->set($this->packKey($key),serialize($cacheData));
+
+        return $cacheData;
     }
 
     public function store(string $key, $value){
-        $this->client()->set($this->packKey($key),serialize((is_callable($value)) ? $value() : $value));
+
+        if ($this->client()->exists($this->packKey($key)))
+            return $this->get($key);
+
+        $cacheData = is_callable($value) ? $value() : $value;
+
+        $this->client()->set($this->packKey($key),serialize($cacheData));
         $this->fillExpire($this->packKey($key));
-        return $this;
+
+        return $cacheData;
     }
 
     public function remember(string $key, $ttl, $value){
-        $this->client()->setex($this->packKey($key), $ttl, serialize((is_callable($value)) ? $value() : $value));
-        return $this;
+
+        if ($this->client()->exists($this->packKey($key)))
+            return $this->get($key);
+
+        $cacheData = is_callable($value) ? $value() : $value;
+
+        $this->client()->setex($this->packKey($key), $ttl, serialize($cacheData));
+
+        return $cacheData;
     }
 
     public function ttl($key, $duration){
