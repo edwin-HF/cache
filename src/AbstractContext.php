@@ -47,6 +47,9 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
 
     }
 
+    /**
+     * @param callable $callback
+     */
     public function exec(callable $callback)
     {
         $callback($this->client(),$this->cacheKey());

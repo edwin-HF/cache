@@ -22,6 +22,11 @@ abstract class CacheList extends AbstractContext
         return parent::newInstance();
     }
 
+    /**
+     * @param $page
+     * @param $limit
+     * @return $this
+     */
     public function forPage($page, $limit){
 
         $this->begin = ($page - 1) * $limit;
@@ -30,6 +35,9 @@ abstract class CacheList extends AbstractContext
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function get()
     {
 
@@ -45,10 +53,17 @@ abstract class CacheList extends AbstractContext
         return $returnData;
     }
 
+    /**
+     * @return int
+     */
     public function size(){
         return $this->client()->zCard($this->cacheKey());
     }
 
+    /**
+     * @param $data
+     * @return $this
+     */
     public function append($data){
 
         try {
@@ -60,6 +75,9 @@ abstract class CacheList extends AbstractContext
     }
 
 
+    /**
+     * @param $data
+     */
     protected function fill($data){
 
         if (!is_array($data) || empty($data))

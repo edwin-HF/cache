@@ -31,6 +31,10 @@ abstract class CacheMap extends AbstractContext
 
     }
 
+    /**
+     * @param array $keys
+     * @return array
+     */
     public function getMultiple($keys = []){
 
         if (empty($keys)){
@@ -47,15 +51,27 @@ abstract class CacheMap extends AbstractContext
 
     }
 
+    /**
+     * @return bool|int
+     */
     public function size(){
         return $this->client()->hLen($this->cacheKey());
     }
 
+    /**
+     * @param $key
+     * @param $value
+     * @return $this
+     */
     public function put($key, $value){
         $this->fill([$key => $value]);
         return $this;
     }
 
+    /**
+     * @param $data
+     * @return $this
+     */
     public function putMultiple($data){
         $this->fill($data);
         return $this;
@@ -70,6 +86,9 @@ abstract class CacheMap extends AbstractContext
         return $this;
     }
 
+    /**
+     * @param $data
+     */
     protected function fill($data){
 
         if (!is_array($data) || empty($data))

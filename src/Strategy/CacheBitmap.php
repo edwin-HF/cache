@@ -15,46 +15,86 @@ abstract class CacheBitmap extends AbstractContext
         return parent::newInstance();
     }
 
+    /**
+     * @param int $offset
+     * @return $this
+     */
     public function resume(int $offset){
         $this->client()->setBit($this->cacheKey(),$offset,1);
         return $this;
     }
 
+    /**
+     * @param array $offset
+     * @return $this
+     */
     public function resumeMultiple(array $offset){
         $this->fill(array_fill_keys($offset,1));
         return $this;
     }
 
+    /**
+     * @param int $offset
+     * @return $this
+     */
     public function revoke(int $offset){
         $this->client()->setBit($this->cacheKey(),$offset,0);
         return $this;
     }
 
+    /**
+     * @param array $offset
+     * @return $this
+     */
     public function revokeMultiple(array $offset){
         $this->fill(array_fill_keys($offset,0));
         return $this;
     }
 
+    /**
+     * @param int $offset
+     * @return int
+     */
     public function status(int $offset){
         return $this->client()->getBit($this->cacheKey(), $offset);
     }
 
+    /**
+     * @return int
+     */
     public function resumeCount(){
         return $this->client()->bitCount($this->cacheKey());
     }
 
+    /**
+     * @param CacheBitmap $target
+     * @return CacheBitmap|mixed
+     */
     public function opAND(CacheBitmap $target){
         return $this->op($this->cacheKey(),$target->cacheKey(),'AND');
     }
 
+
+    /**
+     * @param CacheBitmap $target
+     * @return CacheBitmap|mixed
+     */
     public function opOR(CacheBitmap $target){
         return $this->op($this->cacheKey(),$target->cacheKey(),'OR');
     }
 
+    /**
+     * @param CacheBitmap $target
+     * @return CacheBitmap|mixed
+     */
     public function opXOR(CacheBitmap $target){
         return $this->op($this->cacheKey(),$target->cacheKey(),'XOR');
     }
 
+    /**
+     * @param CacheBitmap $target
+     * @return CacheBitmap|mixed
+     */
     public function opNOT(CacheBitmap $target){
         return $this->op($this->cacheKey(),$target->cacheKey(),'NOT');
     }
@@ -97,7 +137,10 @@ abstract class CacheBitmap extends AbstractContext
         });
     }
 
-    public function fill($data)
+    /**
+     * @param $data
+     */
+    protected function fill($data)
     {
         if (!is_array($data) || empty($data))
             return;
