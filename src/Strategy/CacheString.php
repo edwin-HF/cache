@@ -45,7 +45,33 @@ abstract class CacheString extends AbstractContext
         return $this;
     }
 
-    public function put(string $key, $value){
+    public function forever(string $key, $value){
+        $this->client()->set($this->packKey($key),serialize((is_callable($value)) ? $value() : $value));
+        return $this;
+    }
+
+    public function store(string $key, $value){
+        $this->client()->set($this->packKey($key),serialize((is_callable($value)) ? $value() : $value));
+        $this->fillExpire($this->packKey($key));
+        return $this;
+    }
+
+    public function remember(string $key, $ttl, $value){
+        $this->client()->setex($this->packKey($key), $ttl, serialize((is_callable($value)) ? $value() : $value));
+        return $this;
+    }
+
+    public function ttl($key, $duration){
+        $this->client()->expire($this->packKey($key),$duration);
+        return $this;
+    }
+
+    public function ttlAt(string $key, $datetime){
+        $this->client()->expireAt($this->packKey($key),$datetime);
+        return $this;
+    }
+
+    public function set(string $key, $value){
         $this->client()->set($this->packKey($key), serialize($value));
         return $this;
     }

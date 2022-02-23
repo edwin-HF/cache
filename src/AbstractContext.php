@@ -76,19 +76,24 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
         try {
 
             $this->fill($result);
-            $ttl = $this->expire();
-
-            if (!empty($ttl)){
-                if ($timestamp = strtotime($ttl)){
-                    $this->client()->expireAt($this->cacheKey(), $timestamp);
-                }else{
-                    $this->client()->expire($this->cacheKey(), $ttl);
-                }
-            }
+            $this->fillExpire($this->cacheKey());
 
         }catch (\Exception $exception){}
 
         return $result;
+    }
+
+    protected function fillExpire($key){
+
+        $ttl = $this->expire();
+
+        if (!empty($ttl) && $this->client()->exists($key)){
+            if ($timestamp = strtotime($ttl)){
+                $this->client()->expireAt($key, $timestamp);
+            }else{
+                $this->client()->expire($key, $ttl);
+            }
+        }
     }
 
     abstract protected function fill($data);

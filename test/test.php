@@ -36,16 +36,35 @@ class Bit2 extends \Edv\Cache\Strategy\CacheBitmap{
     use \Edv\Cache\Driver\Traits\AutoGenerateCacheKey;
     use \Edv\Cache\Driver\Traits\LocalConfig;
 
+    public function expire()
+    {
+        return 60;
+    }
+
     public function patch()
     {
         return [12=>1,23=>1];
     }
 }
 
+class Str extends \Edv\Cache\Strategy\CacheString{
+    use \Edv\Cache\Driver\Traits\AutoGenerateCacheKey;
+    use \Edv\Cache\Driver\Traits\LocalConfig;
+
+    public function expire()
+    {
+         return 60;
+        // return '2022-02-17 17:46:00';
+    }
+
+}
+
 try {
 
 
     // bitmap operate
+    Bit2::newInstance()->flush();
+    Bit1::newInstance()->flush();
     $bt1 = Bit1::newInstance()->resume(2)->resume(3);
     $bt2 = Bit2::newInstance()->resume(2);
 
@@ -53,9 +72,8 @@ try {
 
     var_dump($newbt->status(3));
 
-
     // bitmap get set multiple operate
-    Bit2::newInstance()->flush();
+
     var_dump(Bit2::newInstance()->resume(2)->status(12));
 
     Bit2::newInstance()->revokeMultiple([2,12]);
@@ -71,6 +89,15 @@ try {
     // Map
     $res = PersonInfo::newInstance()->get(2);
     var_dump($res);
+
+    Str::newInstance()->store('aa',121);
+    Str::newInstance()->store('bb',function (){
+        return [1,2,3];
+    });
+
+    var_dump(Str::newInstance()->get('bb'));
+
+    Str::newInstance()->flush();
 
 
 } catch (Exception $e) {
