@@ -91,10 +91,11 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
         $ttl = $this->expire();
 
         if (!empty($ttl) && $this->client()->exists($key)){
-            if ($timestamp = strtotime($ttl)){
-                $this->client()->expireAt($key, $timestamp);
-            }else{
+
+            if (preg_match('/^\d+$/',$ttl)){
                 $this->client()->expire($key, $ttl);
+            }elseif(preg_match('/^\d{4}[\-](0?[1-9]|1[012])[\-](0?[1-9]|[12][0-9]|3[01])(\s+(0?[0-9]|[12][0-3])\:(0?[0-9]|[1-5][1-9])\:(0?[0-9]|[1-5][1-9]))?/',$ttl)){
+                $this->client()->expireAt($key, strtotime($ttl));
             }
         }
     }
