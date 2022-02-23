@@ -187,6 +187,12 @@ abstract class CacheString extends AbstractContext
         return $this->client()->incrByFloat($this->packKey($key), $step);
     }
 
+    /**
+     * @return array
+     */
+    public function keys(){
+        return $this->client()->keys(sprintf($this->cacheKey().'*'));
+    }
 
     public function flush()
     {
