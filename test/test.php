@@ -91,16 +91,24 @@ try {
     $res = PersonInfo::newInstance()->get(2);
     var_dump($res);*/
 
-    Str::newInstance()->flush();
-    $res = Str::newInstance()->setParam('id',12)->store('bb',function (){
+//    Str::newInstance()->flush();
+//    $res = Str::newInstance()->setParam('id',12)->store('bb',function (){
+//
+//        var_dump(12121212);
+//        return [1,2,3];
+//    });
+//
+//    var_dump($res);
+//
+//    var_dump(Str::newInstance()->setParam('id',12)->get('bb'));
 
-        var_dump(12121212);
-        return [1,2,3];
-    });
 
-    var_dump($res);
+    $bt1 = Bit1::newInstance()->resume(2)->resume(678920);
 
-    var_dump(Str::newInstance()->setParam('id',12)->get('bb'));
+    $bitmap_str = $bt1->get();
+
+    var_dump($bitmap_str);
+
 
 
 

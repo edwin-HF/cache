@@ -15,6 +15,28 @@ abstract class CacheBitmap extends AbstractContext
         return parent::newInstance();
     }
 
+    public function get(){
+
+        $result = [];
+
+        $bitmapStr = $this->client()->get($this->cacheKey());
+
+        if ($bitmap = unpack("C*", $bitmapStr)){
+            foreach ($bitmap as $key => $number){
+                $offset = ($key - 1) * 8;
+                if($number){
+                    for ($i = 0; $i < 8; $i++){
+                        if (($number >> $i & 1) == 1){
+                            $result[] = $offset + (7 - $i);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
     /**
      * @param int $offset
      * @return $this
