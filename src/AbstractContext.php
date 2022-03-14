@@ -21,6 +21,8 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
     use AutoFlush;
     use Forever;
 
+    protected $params = [];
+
     protected function client(){
 
         static $client = null;
@@ -64,7 +66,7 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
         return $instance;
     }
 
-    protected function load()
+    public function load()
     {
 
         if ($this->client()->exists($this->cacheKey()))
@@ -98,6 +100,28 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
                 $this->client()->expireAt($key, strtotime($ttl));
             }
         }
+    }
+
+    public function setParam($key, $value){
+        $this->params[$key] = $value;
+        return $this;
+    }
+
+    public function setParams($params){
+        $this->params = array_merge($this->params, $params);
+        return $this;
+    }
+
+    public function param($key){
+        return $this->params[$key] ?? '';
+    }
+
+    public function params(){
+        return $this->params;
+    }
+
+    public function cacheKeyPrefix(){
+        return sprintf('edv:cache:key:%s',str_replace('\\','.',get_called_class()));
     }
 
     abstract protected function fill($data);

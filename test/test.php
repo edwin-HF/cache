@@ -48,13 +48,14 @@ class Bit2 extends \Edv\Cache\Strategy\CacheBitmap{
 }
 
 class Str extends \Edv\Cache\Strategy\CacheString{
-    use \Edv\Cache\Driver\Traits\AutoGenerateCacheKey;
     use \Edv\Cache\Driver\Traits\LocalConfig;
+    use \Edv\Cache\Driver\Traits\AutoGenerateCacheKey;
+
 
     public function expire()
     {
-         return 60;
-        // return '2022-02-17 17:46:00';
+         return 60 * 60;
+         //return '2022-02-23 17:20';
     }
 
 }
@@ -62,7 +63,7 @@ class Str extends \Edv\Cache\Strategy\CacheString{
 try {
 
 
-    // bitmap operate
+/*    // bitmap operate
     Bit2::newInstance()->flush();
     Bit1::newInstance()->flush();
     $bt1 = Bit1::newInstance()->resume(2)->resume(3);
@@ -88,16 +89,18 @@ try {
 
     // Map
     $res = PersonInfo::newInstance()->get(2);
-    var_dump($res);
+    var_dump($res);*/
 
-    Str::newInstance()->store('aa',121);
-    $res = Str::newInstance()->store('bb',function (){
+    Str::newInstance()->flush();
+    $res = Str::newInstance()->setParam('id',12)->store('bb',function (){
 
         var_dump(12121212);
         return [1,2,3];
     });
 
     var_dump($res);
+
+    var_dump(Str::newInstance()->setParam('id',12)->get('bb'));
 
 
 
