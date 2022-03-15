@@ -9,6 +9,7 @@ use Edv\Cache\Provider\IReader;
 use Edv\Cache\Provider\IWriter;
 use Edv\Cache\Provider\Traits\AutoFlush;
 use Edv\Cache\Provider\Traits\Forever;
+use Predis\Client;
 use Redis;
 
 /**
@@ -57,9 +58,12 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
         $callback($this->client(),$this->cacheKey());
     }
 
-    public static function newInstance(){
+    public static function newInstance($callback){
         $instance = new static();
         try {
+            if ($callback){
+                $callback($instance);
+            }
             $instance->load();
         } catch (\Exception $e) {
         }

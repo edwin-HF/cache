@@ -103,11 +103,12 @@ try {
 //    var_dump(Str::newInstance()->setParam('id',12)->get('bb'));
 
 
-    $bt1 = Bit1::newInstance()->resume(2)->resume(678920);
+//    Bit1::newInstance()->flush();
+//    $bt1 = Bit1::newInstance()->resume(2)->resume(678920);
 
-    $bitmap_str = $bt1->get();
+//    $bitmap_str = $bt1->get();
 
-    var_dump($bitmap_str);
+//    var_dump($bitmap_str);
 
 
 

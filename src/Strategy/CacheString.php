@@ -14,9 +14,9 @@ abstract class CacheString extends AbstractContext
     use EmptyPatch;
     use EmptyFill;
 
-    public static function newInstance():self
+    public static function newInstance($callback = null):self
     {
-        return parent::newInstance();
+        return parent::newInstance($callback);
     }
 
     private function packKey(string $key){
@@ -194,7 +194,7 @@ abstract class CacheString extends AbstractContext
         return $this->client()->keys(sprintf($this->cacheKey().'*'));
     }
 
-    public function flush()
+    public function clean()
     {
         try {
 

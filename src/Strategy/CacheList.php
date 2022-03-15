@@ -17,9 +17,9 @@ abstract class CacheList extends AbstractContext
     private $begin = '-inf';
     private $end   = '+inf';
 
-    public static function newInstance(): self
+    public static function newInstance($callback = null):self
     {
-        return parent::newInstance();
+        return parent::newInstance($callback);
     }
 
     /**

@@ -9,9 +9,9 @@ use Edv\Cache\AbstractContext;
 abstract class CacheMap extends AbstractContext
 {
 
-    public static function newInstance(): self
+    public static function newInstance($callback = null):self
     {
-        return parent::newInstance();
+        return parent::newInstance($callback);
     }
 
     /**

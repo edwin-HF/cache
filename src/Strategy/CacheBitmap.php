@@ -10,9 +10,9 @@ use Edv\Cache\Provider\Traits\EmptyPatch;
 abstract class CacheBitmap extends AbstractContext
 {
 
-    public static function newInstance():self
+    public static function newInstance($callback = null):self
     {
-        return parent::newInstance();
+        return parent::newInstance($callback);
     }
 
     public function get(){
