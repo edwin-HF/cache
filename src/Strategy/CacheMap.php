@@ -43,11 +43,12 @@ abstract class CacheMap extends AbstractContext
             $result = $this->client()->hMGet($this->cacheKey(), $keys);
         }
 
+        $returnData = [];
         foreach ($result as $key => $value){
-            $result[$key] = unserialize($value);
+            $returnData[$keys[$key]] = unserialize($value);
         }
 
-        return $result;
+        return $returnData;
 
     }
 
