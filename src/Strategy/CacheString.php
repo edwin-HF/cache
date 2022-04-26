@@ -19,7 +19,7 @@ abstract class CacheString extends AbstractContext
         return parent::newInstance($callback);
     }
 
-    private function packKey(string $key){
+    public function packKey(string $key){
         return sprintf('%s:%s', $this->cacheKey(), $key);
     }
 
