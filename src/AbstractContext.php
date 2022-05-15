@@ -9,6 +9,7 @@ use Edv\Cache\Provider\IReader;
 use Edv\Cache\Provider\IWriter;
 use Edv\Cache\Provider\Traits\AutoFlush;
 use Edv\Cache\Provider\Traits\Forever;
+use Edv\Cache\Strategy\Traits\EmptyGuard;
 use Predis\Client;
 use Redis;
 
@@ -21,6 +22,7 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
 
     use AutoFlush;
     use Forever;
+    use EmptyGuard;
 
     protected $params = [];
 
@@ -77,15 +79,21 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
             return true;
 
         try {
-            $result = $this->patch();
+
+            $result = $this->penetration(function (){
+                 return $this->patch();
+            });
+
         }catch (\Exception $exception){
             throw $exception;
         }
 
         try {
 
-            $this->fill($result);
-            $this->fillExpire($this->cacheKey());
+            if (!empty($result)){
+                $this->fill($result);
+                $this->fillExpire($this->cacheKey());
+            }
 
         }catch (\Exception $exception){}
 

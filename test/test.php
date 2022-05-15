@@ -23,11 +23,18 @@ class Bit1 extends \Edv\Cache\Strategy\CacheBitmap{
     use \Edv\Cache\Driver\Traits\AutoGenerateCacheKey;
     use \Edv\Cache\Driver\Traits\LocalConfig;
     use \Edv\Cache\Provider\Traits\EmptyPatch;
+    use \Edv\Cache\Strategy\Traits\GuardPenetration;
 
     public function expire()
     {
         // return 60;
-        return '2022-02-17 17:46:00';
+//        return '2022-02-17 17:46:00';
+    }
+
+    public function patch()
+    {
+        var_dump(1212);
+        return [];
     }
 
 }
@@ -43,7 +50,9 @@ class Bit2 extends \Edv\Cache\Strategy\CacheBitmap{
 
     public function patch()
     {
-        return [12=>1,23=>1];
+
+        var_dump(1212);
+        return [];
     }
 }
 
@@ -103,12 +112,12 @@ try {
 //    var_dump(Str::newInstance()->setParam('id',12)->get('bb'));
 
 
-//    Bit1::newInstance()->flush();
-//    $bt1 = Bit1::newInstance()->resume(2)->resume(678920);
+//    Bit1::newInstance()->flush();return;
+    $bt1 = Bit1::newInstance();
 
-//    $bitmap_str = $bt1->get();
+    $bitmap_str = $bt1->get();
 
-//    var_dump($bitmap_str);
+    var_dump($bitmap_str);
 
 
 
