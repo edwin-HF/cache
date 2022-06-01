@@ -26,6 +26,13 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
 
     protected $params = [];
 
+    public function __destruct()
+    {
+        try {
+            $this->fillExpire($this->cacheKey());
+        }catch (\Throwable $exception){}
+    }
+
     protected function client(){
 
         static $client = null;
@@ -92,7 +99,6 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
 
             if (!empty($result)){
                 $this->fill($result);
-                $this->fillExpire($this->cacheKey());
             }
 
         }catch (\Exception $exception){}
@@ -101,6 +107,9 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
     }
 
     protected function fillExpire($key){
+
+        if ($this->client()->ttl($key) > 0)
+            return;
 
         $ttl = $this->expire();
 
