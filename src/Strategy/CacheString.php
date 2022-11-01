@@ -33,7 +33,15 @@ abstract class CacheString extends AbstractContext
             return  '';
 
         try {
-            return unserialize($this->client()->get($this->packKey($key)));
+
+            $result = $this->client()->get($this->packKey($key));
+
+            if ($result){
+                return unserialize($result);
+            }else{
+                return false;
+            }
+
         }catch (\Exception $exception){
             return false;
         }

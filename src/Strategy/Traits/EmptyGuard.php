@@ -3,7 +3,12 @@
 
 namespace Edv\Cache\Strategy\Traits;
 
-
+/**
+ * Trait EmptyGuard
+ *
+ * @package Edv\Cache\Strategy\Traits
+ * 不需要守卫
+ */
 trait EmptyGuard
 {
 
