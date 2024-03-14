@@ -85,16 +85,16 @@ abstract class CacheList extends AbstractContext
 
         $last = $this->size();
 
-        $this->client()->pipeline();
+        $pipeline = $this->client()->pipeline();
 
         $index = 0;
         foreach ($data as $item){
-            if($this->client()->zAdd($this->cacheKey(), ['NX'], $index + $last, serialize($item))){
+            if($this->client()->zadd($this->cacheKey(), $index + $last, serialize($item))){
                 $index++;
             }
         }
 
-        $this->client()->exec();
+        $pipeline->exec();
 
     }
 

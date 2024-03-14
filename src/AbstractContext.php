@@ -11,7 +11,6 @@ use Edv\Cache\Provider\Traits\AutoFlush;
 use Edv\Cache\Provider\Traits\Forever;
 use Edv\Cache\Strategy\Traits\EmptyGuard;
 use Predis\Client;
-use Redis;
 
 /**
  * Class AbstractContext
@@ -44,16 +43,11 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
             [
                 'host' => '127.0.0.1',
                 'port' => '6379',
-                'password' => '',
                 'database' => 1
             ],$this->config()
         );
 
-        $client = new Redis();
-
-        $client->connect($config['host'],$config['port']);
-        $client->auth($config['password']);
-        $client->select($config['database']);
+        $client = new Client($config);
 
         return $client;
 
@@ -86,20 +80,15 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
             return true;
 
         try {
-
-            $result = $this->penetration(function (){
-                 return $this->patch();
-            });
-
+            $result = $this->patch();
         }catch (\Exception $exception){
             throw $exception;
         }
 
         try {
 
-            if (!empty($result)){
-                $this->fill($result);
-            }
+            $this->fill($result);
+            $this->fillExpire($this->cacheKey());
 
         }catch (\Exception $exception){}
 
@@ -107,9 +96,6 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
     }
 
     protected function fillExpire($key){
-
-        if ($this->client()->ttl($key) > 0)
-            return;
 
         $ttl = $this->expire();
 

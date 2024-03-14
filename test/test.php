@@ -71,6 +71,24 @@ class Str extends \Edv\Cache\Strategy\CacheString{
 
 try {
 
+    $bt1 = Bit1::newInstance()->resume(2)->resume(3);
+    $bt2 = Bit2::newInstance()->resume(2);
+
+    $newbt = $bt1->opAND($bt2);
+    var_dump($newbt->status(2));
+
+//    $res = PersonList::newInstance()->forPage(1,10)->get();
+//    var_dump($res);
+
+//    Str::newInstance()->set('aa',123);
+//    Str::newInstance()->set('aab',123);
+//    var_dump(Str::newInstance()->incByFloat('ccc',1.2));
+//    var_dump(Str::newInstance()->size('aa'));
+//    Str::newInstance()->ttl('aa',60);
+//    Str::newInstance()->clean();
+//    Str::newInstance()->flush();
+
+
 
 /*    // bitmap operate
     Bit2::newInstance()->flush();
@@ -113,11 +131,11 @@ try {
 
 
 //    Bit1::newInstance()->flush();return;
-    $bt1 = Bit1::newInstance();
-
-    $bitmap_str = $bt1->get();
-
-    var_dump($bitmap_str);
+//    $bt1 = Bit1::newInstance();
+//
+//    $bitmap_str = $bt1->get();
+//
+//    var_dump($bitmap_str);
 
 
 

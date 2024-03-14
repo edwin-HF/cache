@@ -37,18 +37,21 @@ abstract class CacheMap extends AbstractContext
      */
     public function getMultiple($keys = []){
 
+        $returnData = [];
         if (empty($keys)){
             $result = $this->client()->hGetAll($this->cacheKey());
+            foreach ($result as $key => $value){
+                $returnData[] = unserialize($value);
+            }
         }else{
             $result = $this->client()->hMGet($this->cacheKey(), $keys);
-        }
-
-        $returnData = [];
-        foreach ($result as $key => $value){
-            $returnData[$keys[$key]] = unserialize($value);
+            foreach ($result as $key => $value){
+                $returnData[$keys[$key]] = unserialize($value);
+            }
         }
 
         return $returnData;
+
 
     }
 
@@ -95,13 +98,13 @@ abstract class CacheMap extends AbstractContext
         if (!is_array($data) || empty($data))
             return;
 
-        $this->client()->pipeline();
+        $pipeline = $this->client()->pipeline();
 
         foreach ($data as $key => $item){
             $this->client()->hSet($this->cacheKey(),$key,serialize($item));
         }
 
-        $this->client()->exec();
+        $pipeline->exec();
 
     }
 

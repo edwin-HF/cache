@@ -4,6 +4,8 @@
 namespace Edv\Cache\Provider\Traits;
 
 
+use Predis\Collection\Iterator\Keyspace;
+
 trait AutoFlush
 {
 
@@ -15,18 +17,9 @@ trait AutoFlush
     public function flush()
     {
         try {
-
-            $iterator = null;
-
-            do{
-
-                $keys = $this->client()->scan($iterator, sprintf('%s*',$this->cacheKeyPrefix()));
-
-                foreach ($keys as $key){
-                    $this->client()->del($key);
-                }
-
-            }while($iterator > 0);
+            foreach (new Keyspace($this->client(), sprintf('%s*',$this->cacheKeyPrefix())) as $key) {
+                $this->client()->del($key);
+            }
 
         }catch (\Exception $exception){}
 

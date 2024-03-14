@@ -167,13 +167,13 @@ abstract class CacheBitmap extends AbstractContext
         if (!is_array($data) || empty($data))
             return;
 
-        $this->client()->pipeline();
+        $pipeline = $this->client()->pipeline();
 
         foreach ($data as $key => $item){
             $this->client()->setBit($this->cacheKey(),$key,($item > 0 ? 1 : 0));
         }
 
-        $this->client()->exec();
+        $pipeline->exec();
     }
 
 

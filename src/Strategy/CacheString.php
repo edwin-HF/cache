@@ -7,6 +7,7 @@ namespace Edv\Cache\Strategy;
 use Edv\Cache\AbstractContext;
 use Edv\Cache\Provider\Traits\EmptyPatch;
 use Edv\Cache\Strategy\Traits\EmptyFill;
+use Predis\Collection\Iterator\Keyspace;
 
 abstract class CacheString extends AbstractContext
 {
@@ -126,7 +127,7 @@ abstract class CacheString extends AbstractContext
      * @return $this
      */
     public function ttlAt(string $key, $datetime){
-        $this->client()->expireAt($this->packKey($key),$datetime);
+        $this->client()->expireAt($this->packKey($key),strtotime($datetime));
         return $this;
     }
 
@@ -206,17 +207,9 @@ abstract class CacheString extends AbstractContext
     {
         try {
 
-            $iterator = null;
-
-            do{
-
-                $keys = $this->client()->scan($iterator, $this->packKey('*'));
-
-                foreach ($keys as $key){
-                    $this->client()->del($key);
-                }
-
-                }while($iterator > 0);
+            foreach (new Keyspace($this->client(), $this->packKey('*')) as $key) {
+                $this->client()->del($key);
+            }
 
         }catch (\Exception $exception){}
 
