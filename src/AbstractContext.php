@@ -34,11 +34,6 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
 
     protected function client(){
 
-        static $client = null;
-
-        if ($client)
-            return $client;
-
         $config = array_merge(
             [
                 'host' => '127.0.0.1',
@@ -47,9 +42,16 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
             ],$this->config()
         );
 
-        $client = new Client($config);
+        $hash = md5(implode(':', $config));
 
-        return $client;
+        static $client = [];
+
+        if (isset($client[$hash]) && !empty($client[$hash]))
+            return $client[$hash];
+
+        $client[$hash] = new Client($config);
+
+        return $client[$hash];
 
     }
 
