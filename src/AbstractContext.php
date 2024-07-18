@@ -101,7 +101,7 @@ abstract class AbstractContext implements IDriver, IReader, IWriter
 
         $ttl = $this->expire();
 
-        if (!empty($ttl) && $this->client()->exists($key)){
+        if (!empty($ttl) && $this->client()->exists($key) && $this->client()->ttl($key) < 0){
 
             if (preg_match('/^\d+$/',$ttl)){
                 $this->client()->expire($key, $ttl);
