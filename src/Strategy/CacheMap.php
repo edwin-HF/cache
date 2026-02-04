@@ -46,12 +46,11 @@ abstract class CacheMap extends AbstractContext
         }else{
             $result = $this->client()->hMGet($this->cacheKey(), $keys);
             foreach ($result as $key => $value){
-                $returnData[$key] = unserialize($value);
+                $returnData[$keys[$key]] = unserialize($value);
             }
         }
 
         return $returnData;
-
 
     }
 
@@ -88,6 +87,57 @@ abstract class CacheMap extends AbstractContext
     public function del($key){
         $this->client()->hDel($this->cacheKey(),$key);
         return $this;
+    }
+
+
+    public function remember(array $itemIds, callable $callback, $itemTTL = 0): array
+    {
+        if (empty($itemIds))
+            return [];
+
+        // 兼容缓存错误
+        try {
+            $result = $this->getMultiple($itemIds);
+            $noCachedItems = array_filter($result, function ($item){
+                $itl = $item['ttl']??0; // item 缓存过期时间
+                return ($item === false || ($itl > 0 && time() > $itl));
+            });
+        }catch (\Throwable $exception){
+            $result = [];
+            $noCachedItems = array_fill_keys($itemIds, false);
+        }
+
+        if (!empty($noCachedItems)){
+
+            $itemIds = array_keys($noCachedItems);
+
+            [$data, $primaryField] = $callback($itemIds);
+
+            $itemsMap = [];
+            foreach ($data as $item){
+                $itemsMap[$item[$primaryField]] = [
+                    'ttl'  => ($itemTTL > 0 ? time() + $itemTTL : 0),
+                    'data' => $item
+                ];
+            }
+
+            if (!empty($itemsMap)){
+                try {
+                    $this->putMultiple($itemsMap);
+                }catch (\Throwable $exception){}
+                $result = ($itemsMap + $result);
+            }
+
+        }
+
+        $returnData = [];
+        if (!empty($result)){
+            foreach ($result as $userId => $item){
+                $returnData[$userId] = $item['data']??[];
+            }
+        }
+
+        return $returnData;
     }
 
     /**
